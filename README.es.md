@@ -31,25 +31,30 @@ node scripts/context-pack.mjs <target>      # → .token-economy/context-pack.md
 
 ## 🚀 Cómo se usa
 
-Es un toolkit, no un comando único — aplica los levers en el trabajo multi-agente que orquestes:
+No corres nada a mano — se enchufa a tu **flujo normal de Claude Code**. Dos pasos de una vez y luego va solo:
 
-1. **Descubre una vez.** Antes de abrir agentes sobre un target, construye el pack:
-   ```bash
-   node scripts/context-pack.mjs <target>     # → .token-economy/context-pack.md
-   ```
-   Pásale ese fichero a cada sub-agente en vez de que cada uno re-escanee el repo.
-2. **Agentes de análisis read-only + terse.** Al definir una lente/reviewer, copia
-   [`agents/readonly-lens.template.md`](agents/readonly-lens.template.md): `tools: ["Read","Grep","Glob"]`
-   (sin Edit/Write) + contrato `OK`/`KO` + 1 línea por hallazgo. Reportan; el orquestador muta en UNA pasada después.
-3. **Activa el output-style frugal.** Habilita [`output-styles/frugal.md`](output-styles/frugal.md)
-   (`/output-style frugal`, o cópialo a tu `~/.claude/output-styles/`) para que el hilo principal lleve el
-   resultado primero y se salte la narración por pasos. Apila con [caveman](https://github.com/JuliusBrussee/caveman).
-4. **Memoria (opcional).** Sigue [`references/memory-adapter.md`](references/memory-adapter.md): el
-   orquestador `search`-before una fase y `write`-after; degrada al fichero del context-pack si no hay memory tool.
+```bash
+# 1. instala (una vez)
+/plugin marketplace add davidgarciagordo/token-economy
+/plugin install token-economy
+
+# 2. enciende el lado de salida (una vez) — sesiones terse, resultado primero
+/output-style frugal
+```
+
+**3. Luego trabaja normal.** Cuando le pidas a Claude **trabajo multi-agente** — "revisa los cambios",
+"audita esto", "migra X por el repo", lo que sea que abra sub-agentes — el skill se dispara y **Claude
+aplica los levers él mismo**: construye un context-pack descubierto-una-vez (corre
+`scripts/context-pack.mjs` con su propia Bash tool — *no tú*), despacha los sub-agentes READ-ONLY +
+TERSE sobre ese pack, muta en una pasada y usa memoria entre runs. Ves menos tokens y la misma calidad;
+nunca tocas los scripts.
+
+> El comando `node scripts/context-pack.mjs …` es lo que **Claude ejecuta por dentro** como parte de la
+> orquestación — está documentado por transparencia, no es un paso para ti.
 
 **¿Ya usas `forge-methodology` o `design-review`?** Lo tienes casi gratis — sus agentes de grill / lentes
 ya corren read-only + terse sobre un context-pack compartido. token-economy es el hogar suelto de esos
-mecanismos + el output-style `frugal`.
+mecanismos + el output-style `frugal`, para cualquier otro trabajo multi-agente.
 
 ## Cómo compone
 
