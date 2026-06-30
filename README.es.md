@@ -39,8 +39,13 @@ No corres nada a mano — se enchufa a tu **flujo normal de Claude Code**. Dos p
 /plugin install token-economy
 
 # 2. enciende el lado de salida (una vez) — sesiones terse, resultado primero
-/output-style frugal
+/output-style frugal      # viene con el plugin, auto-descubierto al instalar
+# apágalo cuando quieras:
+/output-style default
 ```
+
+> Persiste entre sesiones hasta que lo cambies. El estilo `frugal` pone
+> `keep-coding-instructions: true`, así que solo cambia el tono — nunca tu capacidad de programar.
 
 **3. Luego trabaja normal.** Cuando le pidas a Claude **trabajo multi-agente** — "revisa los cambios",
 "audita esto", "migra X por el repo", lo que sea que abra sub-agentes — el skill se dispara y **Claude
