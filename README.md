@@ -40,8 +40,13 @@ then it works in the background:
 /plugin install token-economy
 
 # 2. turn on the output-side (once) — terse, result-first sessions
-/output-style frugal
+/output-style frugal      # shipped with the plugin, auto-discovered on install
+# turn it off any time:
+/output-style default
 ```
+
+> Persists across sessions until you change it. The `frugal` style sets
+> `keep-coding-instructions: true`, so it changes tone only — never your coding ability.
 
 **3. Then just work normally.** When you ask Claude to do **multi-agent work** — "review the changes",
 "audit this", "migrate X across the repo", anything that fans out sub-agents — the skill triggers and
