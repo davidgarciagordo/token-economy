@@ -1,6 +1,7 @@
 ---
 name: frugal
 description: Output discipline for the main thread. Do the work, lead with the result, one tight summary at the end. No per-step narration, no filler. Stacks with caveman (which compresses the words; frugal cuts the count).
+keep-coding-instructions: true
 ---
 
 # Frugal output style
