@@ -14,6 +14,7 @@ Mechanisms, not advice. Each lever is a file that changes behavior.
 | Frugal main thread | Real Claude Code output-style: do the work, lead with the result, one tight summary, no per-step narration, no filler. The caveman-complement for output. Stacks with caveman. | `output-styles/frugal.md` |
 | Pluggable memory | One interface (`search`/`write`), three backends (claude-mem · other MCP · none→file). Orchestrator-owned search-before / write-after = no per-agent races. Degrades to the context-pack file. | `references/memory-adapter.md` |
 | Cap + cache | Cap fan-out (anchors + ≤3 hits/file, ≤40 files); cache the deterministic pack + memory so a 2nd pass reuses artifacts. | `scripts/context-pack.mjs` |
+| Tool, not a model | Deterministic external tooling (eslint · prettier · rector · ecs · phpstan · ruff · tsc · biome…) runs as a **tool with `--fix`** — zero model. A model only on the residual it can't auto-fix, cheapest tier; **never a reasoning model in front of a `--fix` tool**. Mechanical bulk → a temp bash/python script, not hand-editing N files. | *(routing rule)* |
 
 The skill (`SKILL.md`) ties the levers together and points each to its mechanism.
 
