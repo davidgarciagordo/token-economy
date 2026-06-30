@@ -14,6 +14,7 @@ Mecanismos, no consejos. Cada palanca es un fichero que cambia el comportamiento
 | Hilo principal frugal | Output-style real de Claude Code: haz el trabajo, lidera con el resultado, un resumen tenso, sin narrar cada paso, sin relleno. El complemento caveman para la salida. Se suma a caveman. | `output-styles/frugal.md` |
 | Memoria enchufable | Una interfaz (`search`/`write`), tres backends (claude-mem · otro MCP · ninguno→fichero). search-before / write-after en manos del orquestador = sin carreras entre agentes. Degrada al fichero context-pack. | `references/memory-adapter.md` |
 | Cap + caché | Limita el fan-out (anchors + ≤3 hits/fichero, ≤40 ficheros); cachea el pack determinista + memoria para que una 2ª pasada reutilice artefactos. | `scripts/context-pack.mjs` |
+| Herramienta, no modelo | El tooling externo determinista (eslint · prettier · rector · ecs · phpstan · ruff · tsc · biome…) se ejecuta como **herramienta con `--fix`** — cero modelo. Un modelo solo para el residual que no auto-arregla, tier más barato; **nunca un modelo de razonamiento delante de un tool con `--fix`**. Bulk mecánico → script temporal bash/python, no editar N ficheros a mano. | *(regla de routing)* |
 
 La skill (`SKILL.md`) une las palancas y apunta cada una a su mecanismo.
 
