@@ -29,6 +29,30 @@ The skill (`SKILL.md`) ties the levers together and points each to its mechanism
 node scripts/context-pack.mjs <target>      # → .token-economy/context-pack.md
 ```
 
+## 🚀 How to use
+
+It's a toolkit, not a single command — apply the levers in whatever multi-agent work you orchestrate:
+
+1. **Discover once.** Before fanning out agents over a target, build the pack:
+   ```bash
+   node scripts/context-pack.mjs <target>     # → .token-economy/context-pack.md
+   ```
+   Pass that file to every sub-agent instead of letting each re-scan the repo.
+2. **Make analysis agents read-only + terse.** When you define a lens/reviewer sub-agent, copy
+   [`agents/readonly-lens.template.md`](agents/readonly-lens.template.md): `tools: ["Read","Grep","Glob"]`
+   (no Edit/Write) + the `OK`/`KO` + one-line-per-finding contract. They report; the orchestrator mutates
+   in ONE pass afterwards.
+3. **Run the frugal output-style.** Enable [`output-styles/frugal.md`](output-styles/frugal.md)
+   (`/output-style frugal`, or copy it into your `~/.claude/output-styles/`) so the main thread leads
+   with the result and skips per-step narration. Stacks with [caveman](https://github.com/JuliusBrussee/caveman).
+4. **Wire memory (optional).** Follow [`references/memory-adapter.md`](references/memory-adapter.md):
+   the orchestrator `search`-before a phase and `write`-after; degrades to the context-pack file if no
+   memory tool is present.
+
+**Already using `forge-methodology` or `design-review`?** You get most of this for free — their grill /
+lens agents already run as read-only + terse over a shared context-pack. token-economy is the standalone
+home of those mechanisms + the `frugal` output-style.
+
 ## How it composes
 
 ```mermaid
