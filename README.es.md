@@ -30,6 +30,18 @@ node scripts/context-pack.mjs <target>      # → .token-economy/context-pack.md
 
 ## Cómo compone
 
+```mermaid
+flowchart LR
+  MEM[(memoria pluggable<br/>claude-mem · MCP · ninguna→fichero)] -. search-before .-> CP
+  CP[(context-pack<br/>descubre UNA vez)] --> L1[lente read-only] & L2[lente read-only] & L3[lente read-only]
+  L1 & L2 & L3 -- terse OK/KO --> O[orquestador<br/>recoge → muta en UNA pasada]
+  O -. write-after .-> MEM
+  subgraph OUT[eje de salida]
+    FR[output-style frugal] --- CV[caveman<br/>compresión de estilo]
+  end
+  O --> OUT
+```
+
 1. Orquestador: `node scripts/context-pack.mjs <target>` una vez → `context-pack.md`.
 2. Orquestador: memoria `search`-before → vuelca los hits en `SHARED-FOUND`.
 3. Despacha N lentes read-only (contrato terse) — cada una lee el pack, reporta `OK`/`KO`.
