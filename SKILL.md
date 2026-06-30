@@ -1,6 +1,6 @@
 ---
 name: token-economy
-description: Cut INPUT/orchestration tokens (and add output discipline) for multi-agent work. The levers — discover-once context-pack, terse agent output, frugal main-thread output-style, read-only analysis + mutate-in-one-pass, pluggable memory, cap+cache. Complements caveman (which compresses output style). They stack.
+description: Use when orchestrating MULTI-AGENT work in Claude Code — fanning out sub-agents, a review/audit across many files, a migration/sweep, or any task where several agents would each re-scan the same code. Cuts INPUT/orchestration tokens without losing quality. The orchestrator (you, the model) applies the levers ITSELF — build a discover-once context-pack (run scripts/context-pack.mjs via your Bash tool), dispatch sub-agents READ-ONLY + TERSE over that pack, mutate in one pass, use pluggable memory across runs; pair with the `frugal` output-style. The USER never runs the scripts — you do, as part of normal orchestration. Complements caveman (output-style compression); they stack.
 ---
 
 # token-economy
