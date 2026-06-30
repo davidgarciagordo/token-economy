@@ -31,27 +31,31 @@ node scripts/context-pack.mjs <target>      # → .token-economy/context-pack.md
 
 ## 🚀 How to use
 
-It's a toolkit, not a single command — apply the levers in whatever multi-agent work you orchestrate:
+You don't run anything by hand — it plugs into your **normal Claude Code flow**. Two one-time steps,
+then it works in the background:
 
-1. **Discover once.** Before fanning out agents over a target, build the pack:
-   ```bash
-   node scripts/context-pack.mjs <target>     # → .token-economy/context-pack.md
-   ```
-   Pass that file to every sub-agent instead of letting each re-scan the repo.
-2. **Make analysis agents read-only + terse.** When you define a lens/reviewer sub-agent, copy
-   [`agents/readonly-lens.template.md`](agents/readonly-lens.template.md): `tools: ["Read","Grep","Glob"]`
-   (no Edit/Write) + the `OK`/`KO` + one-line-per-finding contract. They report; the orchestrator mutates
-   in ONE pass afterwards.
-3. **Run the frugal output-style.** Enable [`output-styles/frugal.md`](output-styles/frugal.md)
-   (`/output-style frugal`, or copy it into your `~/.claude/output-styles/`) so the main thread leads
-   with the result and skips per-step narration. Stacks with [caveman](https://github.com/JuliusBrussee/caveman).
-4. **Wire memory (optional).** Follow [`references/memory-adapter.md`](references/memory-adapter.md):
-   the orchestrator `search`-before a phase and `write`-after; degrades to the context-pack file if no
-   memory tool is present.
+```bash
+# 1. install (once)
+/plugin marketplace add davidgarciagordo/token-economy
+/plugin install token-economy
 
-**Already using `forge-methodology` or `design-review`?** You get most of this for free — their grill /
-lens agents already run as read-only + terse over a shared context-pack. token-economy is the standalone
-home of those mechanisms + the `frugal` output-style.
+# 2. turn on the output-side (once) — terse, result-first sessions
+/output-style frugal
+```
+
+**3. Then just work normally.** When you ask Claude to do **multi-agent work** — "review the changes",
+"audit this", "migrate X across the repo", anything that fans out sub-agents — the skill triggers and
+**Claude applies the levers itself**: it builds a discover-once context-pack (it runs
+`scripts/context-pack.mjs` with its own Bash tool — *not you*), dispatches the sub-agents READ-ONLY +
+TERSE over that pack, mutates in one pass, and uses memory across runs. You see fewer tokens and the same
+quality; you never touch the scripts.
+
+> The `node scripts/context-pack.mjs …` command is what **Claude runs internally** as part of
+> orchestration — it's documented for transparency, not as a step for you.
+
+**Already using `forge-methodology` or `design-review`?** You get most of this automatically — their
+grill / lens agents already run read-only + terse over a shared context-pack. token-economy is the
+standalone home of those mechanisms + the `frugal` output-style, for any other multi-agent work.
 
 ## How it composes
 
