@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "version": "1.0.0",
+  "name": "token-economy",
+  "description": "Token-economy levers for multi-agent Claude Code work: discover-once context-pack, terse read-only analysis lenses, a frugal main-thread output-style, a pluggable memory adapter, and cap+cache. Cuts INPUT/orchestration tokens; complements caveman (output compression). Independently installable.",
+  "owner": {
+    "name": "David García Gordo",
+    "url": "https://github.com/davidgarciagordo"
+  },
+  "plugins": [
+    {
+      "name": "token-economy",
+      "displayName": "Token Economy",
+      "description": "Cut INPUT/orchestration tokens (and add output discipline) for multi-agent work. Mechanisms, not advice: context-pack, terse read-only lenses, frugal output-style, pluggable memory, cap+cache. Stacks with caveman.",
+      "source": "./"
+    }
+  ]
+}

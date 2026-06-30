@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "token-economy",
+  "displayName": "Token Economy",
+  "version": "0.1.0",
+  "description": "Cut INPUT/orchestration tokens for multi-agent work, plus output discipline for the main thread. Mechanisms: discover-once context-pack (single repo scan, file:line map), terse read-only analysis lenses (no Edit/Write enforces read-only), a frugal output-style (result-first, no narration), a pluggable memory adapter (search-before/write-after, no races), and cap+cache. Complements caveman (output-style compression) — they stack.",
+  "author": {
+    "name": "David García Gordo",
+    "url": "https://github.com/davidgarciagordo"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/davidgarciagordo/token-economy",
+  "keywords": [
+    "tokens",
+    "cost",
+    "multi-agent",
+    "orchestration",
+    "context-pack",
+    "output-style",
+    "memory",
+    "read-only-agents",
+    "caveman-complement"
+  ],
+  "skills": "./",
+  "agents": [
+    "./agents/readonly-lens.template.md"
+  ]
+}

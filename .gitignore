@@ -1,0 +1,4 @@
+.token-economy/
+node_modules/
+*.log
+.DS_Store
