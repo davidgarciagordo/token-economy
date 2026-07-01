@@ -9,8 +9,8 @@ Mechanisms, not advice. Each lever is a file that changes behavior.
 | Lever | Mechanism | File |
 |---|---|---|
 | Discover once | Scan the repo a single time → one `context-pack.md` (target + file:line map + empty `SHARED-FOUND`); every agent reads it instead of re-scanning. Deterministic (no Date.now/random) → byte-stable, cacheable. | `scripts/context-pack.mjs` |
-| Terse agent output | Read-only lens template with an `OK`/`KO` + one-line-per-finding output contract; "read the pack, don't re-scan, don't re-report SHARED-FOUND". | `agents/readonly-lens.template.md` |
-| Read-only by construction | Lens `tools: ["Read","Grep","Glob"]` — no Edit/Write means read-only is enforced, not requested. Collect findings, then mutate in ONE editing pass. | `agents/readonly-lens.template.md` |
+| Terse agent output | Read-only lens agent with an `OK`/`KO` + one-line-per-finding output contract; "read the pack, don't re-scan, don't re-report SHARED-FOUND". | `agents/readonly-lens.md` |
+| Read-only by construction | Lens `tools: ["Read","Grep","Glob"]` — no Edit/Write means read-only is enforced, not requested. Collect findings, then mutate in ONE editing pass. | `agents/readonly-lens.md` |
 | Frugal main thread | Real Claude Code output-style: do the work, lead with the result, one tight summary, no per-step narration, no filler. The caveman-complement for output. Stacks with caveman. | `output-styles/frugal.md` |
 | Pluggable memory | One interface (`search`/`write`), three backends (claude-mem · other MCP · none→file). Orchestrator-owned search-before / write-after = no per-agent races. Degrades to the context-pack file. | `references/memory-adapter.md` |
 | Cap + cache | Cap fan-out (anchors + ≤3 hits/file, ≤40 files); cache the deterministic pack + memory so a 2nd pass reuses artifacts. | `scripts/context-pack.mjs` |
@@ -35,18 +35,20 @@ You don't run anything by hand — it plugs into your **normal Claude Code flow*
 then it works in the background:
 
 ```bash
-# 1. install (once)
+# install (once)
 /plugin marketplace add davidgarciagordo/token-economy
 /plugin install token-economy
-
-# 2. turn on the output-side (once) — terse, result-first sessions
-/output-style frugal      # shipped with the plugin, auto-discovered on install
-# turn it off any time:
-/output-style default
 ```
 
-> Persists across sessions until you change it. The `frugal` style sets
-> `keep-coding-instructions: true`, so it changes tone only — never your coding ability.
+That's it — the `frugal` output-style ships with `force-for-plugin: true`, so it applies
+automatically the moment the plugin is enabled. No `/output-style` command needed (that
+standalone command was deprecated in Claude Code v2.1.73 and removed in v2.1.91).
+
+To turn it off without disabling the rest of the plugin, run `/config` → **Output style** →
+`Default`, or set `"outputStyle": "default"` in `.claude/settings.json`.
+
+> The `frugal` style sets `keep-coding-instructions: true`, so it changes tone only — never
+> your coding ability.
 
 **3. Then just work normally.** When you ask Claude to do **multi-agent work** — "review the changes",
 "audit this", "migrate X across the repo", anything that fans out sub-agents — the skill triggers and
