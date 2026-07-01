@@ -4,9 +4,18 @@ Claude Code plugin. Cuts input/orchestration tokens in multi-agent work (review,
 
 ## Install
 
+Just this plugin:
+
 ```bash
 /plugin marketplace add davidgarciagordo/token-economy
 /plugin install token-economy
+```
+
+Or the whole suite (this + design-review, forge-methodology, working-methods, automations) from one catalog:
+
+```bash
+/plugin marketplace add davidgarciagordo/claude-plugins
+/plugin install token-economy@davidgarciagordo-plugins
 ```
 
 Nothing else to do — the `frugal` output-style applies automatically (`force-for-plugin: true`). To turn it off: `/config` → **Output style** → `Default`.

@@ -4,9 +4,18 @@ Plugin de Claude Code. Recorta tokens de entrada/orquestación en trabajo multia
 
 ## Instalar
 
+Solo este plugin:
+
 ```bash
 /plugin marketplace add davidgarciagordo/token-economy
 /plugin install token-economy
+```
+
+O la suite completa (esto + design-review, forge-methodology, working-methods, automations) desde un solo catálogo:
+
+```bash
+/plugin marketplace add davidgarciagordo/claude-plugins
+/plugin install token-economy@davidgarciagordo-plugins
 ```
 
 Nada más que hacer — el output-style `frugal` se aplica solo (`force-for-plugin: true`). Para apagarlo: `/config` → **Output style** → `Default`.
