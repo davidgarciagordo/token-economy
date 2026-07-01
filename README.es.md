@@ -11,7 +11,7 @@ Solo este plugin:
 /plugin install token-economy
 ```
 
-O la suite completa (esto + design-review, forge-methodology, working-methods, automations) desde un solo catálogo:
+O la suite completa (esto + design-review, forge-methodology, working-methods, automations) desde [un solo catálogo](https://github.com/davidgarciagordo/claude-plugins):
 
 ```bash
 /plugin marketplace add davidgarciagordo/claude-plugins
