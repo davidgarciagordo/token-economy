@@ -9,8 +9,8 @@ Mecanismos, no consejos. Cada palanca es un fichero que cambia el comportamiento
 | Palanca | Mecanismo | Fichero |
 |---|---|---|
 | Descubrir una vez | Escanea el repo una sola vez → un `context-pack.md` (target + mapa fichero:línea + `SHARED-FOUND` vacío); cada agente lo lee en vez de re-escanear. Determinista (sin Date.now/random) → estable byte a byte, cacheable. | `scripts/context-pack.mjs` |
-| Salida terse de agentes | Plantilla de lente read-only con contrato de salida `OK`/`KO` + una línea por hallazgo; "lee el pack, no re-escanees, no repitas SHARED-FOUND". | `agents/readonly-lens.template.md` |
-| Read-only por construcción | Lente con `tools: ["Read","Grep","Glob"]` — sin Edit/Write el read-only queda impuesto, no pedido. Recoge hallazgos y muta en UNA pasada de edición. | `agents/readonly-lens.template.md` |
+| Salida terse de agentes | Plantilla de lente read-only con contrato de salida `OK`/`KO` + una línea por hallazgo; "lee el pack, no re-escanees, no repitas SHARED-FOUND". | `agents/readonly-lens.md` |
+| Read-only por construcción | Lente con `tools: ["Read","Grep","Glob"]` — sin Edit/Write el read-only queda impuesto, no pedido. Recoge hallazgos y muta en UNA pasada de edición. | `agents/readonly-lens.md` |
 | Hilo principal frugal | Output-style real de Claude Code: haz el trabajo, lidera con el resultado, un resumen tenso, sin narrar cada paso, sin relleno. El complemento caveman para la salida. Se suma a caveman. | `output-styles/frugal.md` |
 | Memoria enchufable | Una interfaz (`search`/`write`), tres backends (claude-mem · otro MCP · ninguno→fichero). search-before / write-after en manos del orquestador = sin carreras entre agentes. Degrada al fichero context-pack. | `references/memory-adapter.md` |
 | Cap + caché | Limita el fan-out (anchors + ≤3 hits/fichero, ≤40 ficheros); cachea el pack determinista + memoria para que una 2ª pasada reutilice artefactos. | `scripts/context-pack.mjs` |
@@ -31,21 +31,23 @@ node scripts/context-pack.mjs <target>      # → .token-economy/context-pack.md
 
 ## 🚀 Cómo se usa
 
-No corres nada a mano — se enchufa a tu **flujo normal de Claude Code**. Dos pasos de una vez y luego va solo:
+No corres nada a mano — se enchufa a tu **flujo normal de Claude Code**. Un paso de una vez y luego va solo:
 
 ```bash
-# 1. instala (una vez)
+# instala (una vez)
 /plugin marketplace add davidgarciagordo/token-economy
 /plugin install token-economy
-
-# 2. enciende el lado de salida (una vez) — sesiones terse, resultado primero
-/output-style frugal      # viene con el plugin, auto-descubierto al instalar
-# apágalo cuando quieras:
-/output-style default
 ```
 
-> Persiste entre sesiones hasta que lo cambies. El estilo `frugal` pone
-> `keep-coding-instructions: true`, así que solo cambia el tono — nunca tu capacidad de programar.
+Y ya está — el output-style `frugal` viene con `force-for-plugin: true`, así que se aplica
+solo en cuanto el plugin queda activo. No hace falta ningún comando `/output-style` (ese
+comando suelto quedó deprecado en Claude Code v2.1.73 y se eliminó en v2.1.91).
+
+Para apagarlo sin desactivar el resto del plugin: `/config` → **Output style** → `Default`,
+o pon `"outputStyle": "default"` en `.claude/settings.json`.
+
+> El estilo `frugal` pone `keep-coding-instructions: true`, así que solo cambia el tono —
+> nunca tu capacidad de programar.
 
 **3. Luego trabaja normal.** Cuando le pidas a Claude **trabajo multi-agente** — "revisa los cambios",
 "audita esto", "migra X por el repo", lo que sea que abra sub-agentes — el skill se dispara y **Claude

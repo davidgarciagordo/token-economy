@@ -20,7 +20,7 @@ Each lever below is a real mechanism, not advice. Apply the ones the task needs.
    ```
 
 2. **Terse agent output.** Sub-agents report `OK`/`KO` + one line per finding, no narration,
-   no re-stating the task. Enforced by an output contract. → `agents/readonly-lens.template.md`
+   no re-stating the task. Enforced by an output contract. → `agents/readonly-lens.md`
 
 3. **Frugal main-thread output-style.** The main thread does the work but leads with the
    result and gives one tight summary — no per-step status, no filler. → `output-styles/frugal.md`
@@ -28,7 +28,7 @@ Each lever below is a real mechanism, not advice. Apply the ones the task needs.
 
 4. **Read-only analysis + mutate-in-one-pass.** Diagnosis agents get `tools: ["Read","Grep","Glob"]`
    (no Edit/Write = read-only by construction). Collect ALL findings, then mutate in a single
-   editing pass — don't interleave analyze/edit/re-analyze. → `agents/readonly-lens.template.md`
+   editing pass — don't interleave analyze/edit/re-analyze. → `agents/readonly-lens.md`
 
 5. **Pluggable memory.** search-before / write-after, orchestrator-owned (no per-agent races),
    degrades MCP → file. Turns this run's discovery into next run's free context.

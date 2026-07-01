@@ -23,6 +23,6 @@
   ],
   "skills": "./",
   "agents": [
-    "./agents/readonly-lens.template.md"
+    "./agents/readonly-lens.md"
   ]
 }
