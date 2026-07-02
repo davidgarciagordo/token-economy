@@ -131,19 +131,27 @@ function formatRepoMap(hits) {
 
 /* ── main ─────────────────────────────────────────────────────────────────── */
 
-const targetArg = process.argv[2];
-if (!targetArg || targetArg.startsWith('--')) {
+// Target = first non-flag arg that isn't the value of a preceding flag, so
+// `node context-pack.mjs --root . SKILL.md` works the same as `... SKILL.md --root .`.
+const FLAGS_WITH_VALUE = new Set(['--root', '--out']);
+let targetArg = null;
+for (let i = 2; i < process.argv.length; i++) {
+  const a = process.argv[i];
+  if (a.startsWith('--')) { if (FLAGS_WITH_VALUE.has(a)) i++; continue; }
+  targetArg = a; break;
+}
+if (!targetArg) {
   process.stdout.write(
     'Usage: node context-pack.mjs <target> [--root <dir>] [--out <path>]\n' +
     '  <target>  file the work is about (spec / plan / component / module)\n' +
     '  --root    repo root (default: git root of cwd)\n' +
-    '  --out     output path (default: .token-economy/context-pack.md)\n'
+    '  --out     output path (default: <root>/.token-economy/context-pack.md)\n'
   );
-  process.exit(targetArg ? 0 : 2);
+  process.exit(2); // no pack was written — never exit 0 here
 }
 
 const rootArg = arg('--root');
-const outArg  = arg('--out') || '.token-economy/context-pack.md';
+const outArg  = arg('--out');
 
 const cwd  = process.cwd();
 const root = rootArg ? path.resolve(rootArg) : gitRoot(cwd);
@@ -188,7 +196,11 @@ if (keywordPattern) {
 
 const allHits = [...anchorHits, ...keywordHits];
 
-const outAbs = path.isAbsolute(outArg) ? outArg : path.resolve(cwd, outArg);
+// Default output is anchored to the REPO ROOT (not cwd), so agents can rely on
+// <root>/.token-economy/context-pack.md regardless of where the script was run from.
+const outAbs = outArg
+  ? (path.isAbsolute(outArg) ? outArg : path.resolve(cwd, outArg))
+  : path.join(root, '.token-economy', 'context-pack.md');
 fs.mkdirSync(path.dirname(outAbs), { recursive: true });
 
 /* ── write the pack ──────────────────────────────────────────────────────── */

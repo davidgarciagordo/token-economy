@@ -14,7 +14,8 @@ task you were given, not from this file. The tool list above has **no Edit/Write
 read-only is enforced by construction — you cannot mutate anything.
 
 ## Inputs (read these, in order)
-1. The **context-pack** at `.token-economy/context-pack.md` — target content + repo map (file:line) + SHARED-FOUND.
+1. The **context-pack** — at the path given in your invocation prompt, or (default)
+   `<repo-root>/.token-economy/context-pack.md`. Target content + repo map (file:line) + SHARED-FOUND.
 2. Only the specific files you still need, located via the repo map. Read the **excerpt around the cited line**, not whole files.
 
 ## Hard rules (token discipline)
