@@ -24,7 +24,7 @@ Nothing else to do — the `frugal` output-style applies automatically (`force-f
 
 No manual steps. When you ask Claude for multi-agent work, the `token-economy` skill triggers and Claude applies these mechanisms itself:
 
-- **context-pack** (`scripts/context-pack.mjs`, run by Claude as `node "${CLAUDE_PLUGIN_ROOT}/scripts/context-pack.mjs" <target>`) — scans the repo once → `<repo-root>/.token-economy/context-pack.md` (file:line map). Sub-agents read this instead of re-scanning; every lens gets the same stable prompt prefix pointing at the pack (prompt-cache lever).
+- **context-pack** (`scripts/context-pack.mjs`, run by Claude as `node "${CLAUDE_PLUGIN_ROOT}/scripts/context-pack.mjs" <target>`) — scans the repo once → `<repo-root>/.token-economy/context-pack.md` (file:line map), plus the same data as JSON with `--json`/`--json-out` for downstream tooling. Sub-agents read this instead of re-scanning; every lens gets the same stable prompt prefix pointing at the pack (prompt-cache lever). Determinism is same-machine (cross-machine depends on checkout line-endings).
 - **read-only lens agent** (`agents/readonly-lens.md`) — `Read`/`Grep`/`Glob` only, no Edit/Write/Bash. Terse `OK`/`KO` output per finding.
 - **frugal output-style** (`output-styles/frugal.md`) — result-first, no per-step narration.
 - **pluggable memory** (`references/memory-adapter.md`) — search-before/write-after, degrades to `.token-economy/memory.md` (file backend) if no MCP memory is configured.

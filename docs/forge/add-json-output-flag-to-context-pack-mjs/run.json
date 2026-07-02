@@ -1,0 +1,33 @@
+{
+  "slug": "add-json-output-flag-to-context-pack-mjs",
+  "task": "add --json output flag to context-pack.mjs",
+  "dir": "docs/forge/add-json-output-flag-to-context-pack-mjs",
+  "status": "complete",
+  "phase": "handoff",
+  "phasesEntered": [
+    "align",
+    "reference-decomposition",
+    "draft",
+    "grill",
+    "checkpoint-1",
+    "spec",
+    "regrill",
+    "checkpoint-2",
+    "plan",
+    "execute",
+    "verify",
+    "handoff"
+  ],
+  "preMergeArtifacts": [
+    "spec.md",
+    "acceptance-matrix.md",
+    "grill-verdicts.md",
+    "decisions-1.md",
+    "regrill-verdicts.md",
+    "decisions-2.md",
+    "plan.md"
+  ],
+  "createdAt": "2026-07-02T08:19:28.166Z",
+  "updatedAt": "2026-07-02T09:06:21.051Z",
+  "completedAt": "2026-07-02T09:06:21.083Z"
+}
