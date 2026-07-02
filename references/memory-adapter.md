@@ -15,11 +15,20 @@ That's it. Two operations. Everything below is a backend behind this interface.
 
 ## Backends (in preference order)
 
-| backend        | search                          | write                          |
-|----------------|---------------------------------|--------------------------------|
-| `claude-mem`   | `mem-search` / `get_observations` | `add_observations`           |
-| other MCP      | the server's query tool         | the server's write tool        |
-| `none` → file  | grep `.token-economy/memory.md` | append to `.token-economy/memory.md` |
+| backend        | search                                              | write                                    |
+|----------------|-----------------------------------------------------|------------------------------------------|
+| `claude-mem`   | `search` MCP tool (or the `mem-search` skill)       | automatic via its hooks — see note below |
+| other MCP      | the server's query tool                             | the server's write tool                  |
+| `none` → file  | grep `.token-economy/memory.md`                     | append to `.token-economy/memory.md`     |
+
+**claude-mem write note (verified):** claude-mem records observations automatically through its
+session hooks — it exposes NO explicit write tool (`add_observations` does not exist; don't
+hallucinate a tool call). For explicit write-after, use the **file backend** alongside it:
+claude-mem gives you search-before for free, the file gives you deterministic write-after.
+(`get_observations` is fetch-by-id, not search — use `search` for querying.)
+
+**Backend detection:** at phase start, check the tool list for `mem-*`/memory MCP tools (via
+ToolSearch if deferred). Found → that backend for search. Not found → file backend for both ops.
 
 Degrade gracefully: no MCP → fall back to the file backend. The file backend also doubles
 as the durable form of the **context-pack** (`SHARED-FOUND` persisted across runs).
