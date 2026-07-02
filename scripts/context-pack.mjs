@@ -133,7 +133,7 @@ function formatRepoMap(hits) {
 
 // Target = first non-flag arg that isn't the value of a preceding flag, so
 // `node context-pack.mjs --root . SKILL.md` works the same as `... SKILL.md --root .`.
-const FLAGS_WITH_VALUE = new Set(['--root', '--out']);
+const FLAGS_WITH_VALUE = new Set(['--root', '--out', '--max-target-lines']);
 let targetArg = null;
 for (let i = 2; i < process.argv.length; i++) {
   const a = process.argv[i];
@@ -145,7 +145,8 @@ if (!targetArg) {
     'Usage: node context-pack.mjs <target> [--root <dir>] [--out <path>]\n' +
     '  <target>  file the work is about (spec / plan / component / module)\n' +
     '  --root    repo root (default: git root of cwd)\n' +
-    '  --out     output path (default: <root>/.token-economy/context-pack.md)\n'
+    '  --out     output path (default: <root>/.token-economy/context-pack.md)\n' +
+    '  --max-target-lines  embed cap; larger targets embed an outline (default: 400)\n'
   );
   process.exit(2); // no pack was written — never exit 0 here
 }
@@ -196,6 +197,40 @@ if (keywordPattern) {
 
 const allHits = [...anchorHits, ...keywordHits];
 
+/* ── target embedding cap ─────────────────────────────────────────────────── */
+// Every lens reads the whole pack; embedding a huge target multiplies its cost by N agents.
+// Above the cap, embed a line-numbered OUTLINE (headings / top-level decls + section head lines)
+// instead — lenses open the real file at the cited line only when they need it.
+const MAX_TARGET_LINES = (() => {
+  const v = parseInt(arg('--max-target-lines') || '', 10);
+  return Number.isFinite(v) && v > 0 ? v : 400;
+})();
+
+function outlineOf(content) {
+  const lines = content.split('\n');
+  const out = [];
+  const isAnchorLine = (l) =>
+    /^#{1,6}\s/.test(l) ||                                            // md headings
+    /^\s*(export\s+)?(async\s+)?(function|class|const|let|interface|type|def|func|fn|impl|struct|enum)\b/.test(l);
+  for (let i = 0; i < lines.length; i++) {
+    if (isAnchorLine(lines[i])) {
+      out.push(`  ${i + 1}: ${lines[i].trim().slice(0, 120)}`);
+      for (let j = i + 1; j <= i + 2 && j < lines.length; j++) {
+        const t = lines[j].trim();
+        if (t && !isAnchorLine(lines[j])) { out.push(`  ${j + 1}:   ${t.slice(0, 100)}`); break; }
+      }
+    }
+  }
+  return out.join('\n');
+}
+
+const targetLineCount = targetContent.split('\n').length;
+const targetEmbedded = targetLineCount <= MAX_TARGET_LINES
+  ? targetContent
+  : `_Target is ${targetLineCount} lines (> ${MAX_TARGET_LINES} cap) — OUTLINE below (line: content). ` +
+    `Read the excerpt you need from \`${targetRel}\` at the cited line; do NOT read the whole file._\n\n` +
+    outlineOf(targetContent);
+
 // Default output is anchored to the REPO ROOT (not cwd), so agents can rely on
 // <root>/.token-economy/context-pack.md regardless of where the script was run from.
 const outAbs = outArg
@@ -214,7 +249,7 @@ ${targetRel}
 \`\`\`
 
 ### Content
-${targetContent}
+${targetEmbedded}
 
 ---
 
