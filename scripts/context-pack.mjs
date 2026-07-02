@@ -9,18 +9,22 @@
  * all downstream agents read instead of re-scanning.
  *
  * Usage:
- *   node context-pack.mjs <target> [--root <dir>] [--out <path>]
+ *   node context-pack.mjs <target> [--root <dir>] [--out <path>] [--json] [--json-out <path>] [--max-target-lines <n>]
  *
- *   <target>  file (spec/plan/component/module) the work is about
- *   --root    repo root (default: git root of cwd)
- *   --out     output path (default: .token-economy/context-pack.md)
+ *   <target>    file (spec/plan/component/module) the work is about
+ *   --root      repo root (default: git root of cwd)
+ *   --out       markdown output path (default: <root>/.token-economy/context-pack.md)
+ *   --json      also emit JSON (schemaVersion 1) to <root>/.token-economy/context-pack.json —
+ *               file only, never stdout; takes NO value
+ *   --json-out  JSON output path (implies --json)
  *
- * Output (one markdown file):
- *   1. Target content
- *   2. Repo map  — file:line of anchors (rules/config/docs) + keyword precedents
- *   3. Empty SHARED-FOUND  — orchestrator fills it; agents must NOT re-report it
+ * Output: markdown pack (target content + repo map file:line + empty SHARED-FOUND) and,
+ * when requested, the same data as JSON (one shared truncated view — md and JSON always match).
  *
- * Deterministic: no Date.now / Math.random. Stable output for identical inputs.
+ * Determinism & limits: no Date.now / Math.random — byte-stable for identical inputs on the
+ * SAME machine. Cross-machine byte-identity depends on checkout line-endings (core.autocrlf).
+ * Non-UTF8 targets degrade via U+FFFD replacement (no validation). A concurrent reader of the
+ * default json may see ENOENT during stale-pair cleanup (retryable).
  */
 
 import fs from 'fs';
@@ -76,7 +80,7 @@ function readSafe(abs) {
 }
 
 function grepLines(root, files, pattern) {
-  /** Returns [{file, line, text}] for matches — in-process, no shell injection. */
+  /** Returns [{file, line, text, kind}] for matches — in-process, no shell injection. */
   const results = [];
   const re = new RegExp(pattern, 'i');
   for (const rel of files) {
@@ -84,7 +88,7 @@ function grepLines(root, files, pattern) {
     if (content === null) continue;
     const lines = content.split('\n');
     for (let i = 0; i < lines.length; i++) {
-      if (re.test(lines[i])) results.push({ file: rel, line: i + 1, text: lines[i].trim() });
+      if (re.test(lines[i])) results.push({ file: rel, line: i + 1, text: lines[i].trim(), kind: 'keyword' });
     }
   }
   return results;
@@ -118,22 +122,35 @@ const ANCHOR_GLOBS = [
 
 function isAnchor(rel) { return ANCHOR_GLOBS.some((re) => re.test(rel)); }
 
-function formatRepoMap(hits) {
-  if (!hits.length) return '_No anchors or keyword precedents found._\n';
+/**
+ * Shared truncated view — the SINGLE source both serializations (md + JSON) render from, so they
+ * always report the same data. Truncation is TWO-STAGE by design: keyword hits are already capped
+ * at ≤3/file at collection time; this step applies the render caps (≤4 entries/file after
+ * grouping, text ≤100 chars) and the file ordering (MUST be localeCompare — a default sort()
+ * differs on mixed-case names and would silently change the md output).
+ */
+function buildRepoMapView(hits) {
   const byFile = {};
-  for (const { file, line, text } of hits) (byFile[file] ||= []).push({ line, text });
-  return Object.entries(byFile)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([file, h]) => h.slice(0, 4)
-      .map(({ line, text }) => `  ${file}:${line}  ${text.slice(0, 100)}`).join('\n'))
-    .join('\n');
+  for (const h of hits) (byFile[h.file] ||= []).push(h);
+  const view = [];
+  for (const [file, h] of Object.entries(byFile).sort(([a], [b]) => a.localeCompare(b))) {
+    for (const { line, text, kind } of h.slice(0, 4)) {
+      view.push({ file, line, text: text.slice(0, 100), kind });
+    }
+  }
+  return view;
+}
+
+function formatRepoMap(view) {
+  if (!view.length) return '_No anchors or keyword precedents found._\n';
+  return view.map(({ file, line, text }) => `  ${file}:${line}  ${text}`).join('\n');
 }
 
 /* ── main ─────────────────────────────────────────────────────────────────── */
 
 // Target = first non-flag arg that isn't the value of a preceding flag, so
 // `node context-pack.mjs --root . SKILL.md` works the same as `... SKILL.md --root .`.
-const FLAGS_WITH_VALUE = new Set(['--root', '--out', '--max-target-lines']);
+const FLAGS_WITH_VALUE = new Set(['--root', '--out', '--json-out', '--max-target-lines']);
 let targetArg = null;
 for (let i = 2; i < process.argv.length; i++) {
   const a = process.argv[i];
@@ -146,13 +163,18 @@ if (!targetArg) {
     '  <target>  file the work is about (spec / plan / component / module)\n' +
     '  --root    repo root (default: git root of cwd)\n' +
     '  --out     output path (default: <root>/.token-economy/context-pack.md)\n' +
-    '  --max-target-lines  embed cap; larger targets embed an outline (default: 400)\n'
+    '  --max-target-lines  embed cap; larger targets embed an outline (default: 400)\n' +
+    '  --json    also emit JSON to <root>/.token-economy/context-pack.json (file only, never stdout; takes NO value)\n' +
+    '  --json-out <path>   name the JSON file (implies --json)\n'
   );
   process.exit(2); // no pack was written — never exit 0 here
 }
 
 const rootArg = arg('--root');
 const outArg  = arg('--out');
+// EXACT token match — '--json-out' contains '--json' as a prefix; startsWith would misfire.
+const jsonOutArg = arg('--json-out');
+const jsonWanted = process.argv.includes('--json') || jsonOutArg != null;
 
 const cwd  = process.cwd();
 const root = rootArg ? path.resolve(rootArg) : gitRoot(cwd);
@@ -177,7 +199,7 @@ for (const rel of anchorFiles) {
   const lines = txt.split('\n');
   const idx = lines.findIndex((l) => l.trim() && !l.trim().startsWith('#'));
   const lineNo = idx >= 0 ? idx + 1 : 1;
-  anchorHits.push({ file: rel, line: lineNo, text: lines[lineNo - 1]?.trim() || '' });
+  anchorHits.push({ file: rel, line: lineNo, text: lines[lineNo - 1]?.trim() || '', kind: 'anchor' });
 }
 
 // Keyword precedents in the remaining files (cap 40 files, 3 hits each).
@@ -225,20 +247,39 @@ function outlineOf(content) {
 }
 
 const targetLineCount = targetContent.split('\n').length;
-const targetEmbedded = targetLineCount <= MAX_TARGET_LINES
+const targetEmbedding = targetLineCount <= MAX_TARGET_LINES ? 'full' : 'outline';
+const embeddedText = targetLineCount <= MAX_TARGET_LINES
   ? targetContent
   : `_Target is ${targetLineCount} lines (> ${MAX_TARGET_LINES} cap) — OUTLINE below (line: content). ` +
     `Read the excerpt you need from \`${targetRel}\` at the cited line; do NOT read the whole file._\n\n` +
     outlineOf(targetContent);
 
-// Default output is anchored to the REPO ROOT (not cwd), so agents can rely on
-// <root>/.token-economy/context-pack.md regardless of where the script was run from.
+// Default outputs are anchored to the REPO ROOT (not cwd), so agents can rely on
+// <root>/.token-economy/context-pack.{md,json} regardless of where the script was run from.
 const outAbs = outArg
   ? (path.isAbsolute(outArg) ? outArg : path.resolve(cwd, outArg))
   : path.join(root, '.token-economy', 'context-pack.md');
+const jsonDefaultAbs = path.join(root, '.token-economy', 'context-pack.json');
+const jsonAbs = jsonOutArg
+  ? (path.isAbsolute(jsonOutArg) ? jsonOutArg : path.resolve(cwd, jsonOutArg))
+  : jsonDefaultAbs;
 fs.mkdirSync(path.dirname(outAbs), { recursive: true });
+if (jsonWanted) fs.mkdirSync(path.dirname(jsonAbs), { recursive: true });
 
-/* ── write the pack ──────────────────────────────────────────────────────── */
+/* ── build the data once, render twice ───────────────────────────────────── */
+
+const repoMapView = buildRepoMapView(allHits);
+
+const packData = {
+  schemaVersion: 1,
+  target: targetRel,
+  targetLines: targetLineCount,
+  targetEmbedding,
+  content: embeddedText,
+  keywords,
+  repoMap: repoMapView,
+  sharedFound: [],
+};
 
 const pack = `# Context Pack
 > Single-scan artifact. Downstream agents READ this — they do NOT re-scan the repo.
@@ -249,7 +290,7 @@ ${targetRel}
 \`\`\`
 
 ### Content
-${targetEmbedded}
+${embeddedText}
 
 ---
 
@@ -257,7 +298,7 @@ ${targetEmbedded}
 Anchors: config, docs, ADRs, conventions (always included).
 Keywords extracted from target: ${keywords.join(', ') || '(none)'}
 
-${formatRepoMap(allHits)}
+${formatRepoMap(repoMapView)}
 
 ---
 
@@ -267,8 +308,24 @@ ${formatRepoMap(allHits)}
 `;
 
 fs.writeFileSync(outAbs, pack, 'utf8');
+if (jsonWanted) {
+  fs.writeFileSync(jsonAbs, JSON.stringify(packData, null, 2) + '\n', 'utf8');
+}
+
+// Stale-pair prevention: if this run did NOT write the default json path, a leftover default
+// json (from an earlier --json run) would silently mismatch the fresh default md. Delete it —
+// best-effort (never abort the md write over a stale artifact), only after target validation
+// (we are past die()), and never when the default json IS the file we just packed as target.
+// Known limitation: a concurrent reader may see ENOENT during this delete (retryable); the
+// single-orchestrator-writer doctrine avoids it.
+const wroteDefaultJson = jsonWanted && jsonAbs === jsonDefaultAbs;
+if (!wroteDefaultJson && jsonDefaultAbs !== targetAbs) {
+  try { fs.unlinkSync(jsonDefaultAbs); } catch (_) { /* ENOENT/EACCES — best-effort */ }
+}
+
 process.stdout.write(`context-pack: wrote ${path.relative(cwd, outAbs)}\n`);
 process.stdout.write(`  target   : ${targetRel}\n`);
 process.stdout.write(`  anchors  : ${anchorFiles.length} files\n`);
 process.stdout.write(`  keywords : ${keywords.join(', ') || '(none)'}\n`);
 process.stdout.write(`  hits     : ${allHits.length} file:line entries\n`);
+if (jsonWanted) process.stdout.write(`  json     : ${path.relative(cwd, jsonAbs)}\n`);
