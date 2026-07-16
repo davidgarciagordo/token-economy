@@ -79,13 +79,18 @@ function readSafe(abs) {
   try { return fs.readFileSync(abs, 'utf8'); } catch (_) { return null; }
 }
 
+const MAX_GREP_BYTES = 512 * 1024; // skip huge files — anchors/keyword precedents don't live there
+
 function grepLines(root, files, pattern) {
   /** Returns [{file, line, text, kind}] for matches — in-process, no shell injection. */
   const results = [];
   const re = new RegExp(pattern, 'i');
   for (const rel of files) {
-    const content = readSafe(path.join(root, rel));
+    const abs = path.join(root, rel);
+    try { if (fs.statSync(abs).size > MAX_GREP_BYTES) continue; } catch (_) { continue; }
+    const content = readSafe(abs);
     if (content === null) continue;
+    if (content.slice(0, 8192).includes('\0')) continue; // binary (NUL in first chunk)
     const lines = content.split('\n');
     for (let i = 0; i < lines.length; i++) {
       if (re.test(lines[i])) results.push({ file: rel, line: i + 1, text: lines[i].trim(), kind: 'keyword' });

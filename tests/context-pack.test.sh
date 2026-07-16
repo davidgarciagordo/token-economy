@@ -24,7 +24,10 @@ git add -A && git commit -qm fixture
 
 MD=".token-economy/context-pack.md"; JS=".token-economy/context-pack.json"
 
-# T1 md byte-identity vs baseline (pre-change copy passed via $BASELINE, optional)
+# T1 md byte-identity vs baseline (pre-change copy passed via $BASELINE, optional).
+# To obtain a baseline, export the pre-change script from git history, e.g.:
+#   git show <ref>:scripts/context-pack.mjs > /tmp/context-pack.baseline.mjs
+#   BASELINE=/tmp/context-pack.baseline.mjs bash tests/context-pack.test.sh
 if [ -n "${BASELINE:-}" ] && [ -f "$BASELINE" ]; then
   node "$BASELINE" small.md >/dev/null 2>&1 && cp "$MD" md.old
   node "$SCRIPT"  small.md >/dev/null 2>&1
