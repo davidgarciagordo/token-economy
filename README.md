@@ -42,6 +42,8 @@ Measured on a real design-review pass (Clock Admin, 4-lens diagnosis). Tokens ar
 
 **Honest caveats:** single component; the pack build is ~74k one-time (it amortizes across lenses and across runs); measured on the design-review pipeline specifically. The biggest win is **cross-run** reuse — the deterministic pack + persisted memory make a second pass on the same target nearly free.
 
+**Proof, not just a claim:** [`docs/forge/add-json-output-flag-to-context-pack-mjs/`](docs/forge/add-json-output-flag-to-context-pack-mjs/) is a complete Forge run built *on this repo, using its own `--json` feature* — spec, plan, grill verdicts, and [`verify.md`](docs/forge/add-json-output-flag-to-context-pack-mjs/verify.md): 12/12 tests passing, confirmed by an independent verifier (someone other than the executor), with the real PreToolUse hook observed blocking a `gh pr create` that had unevidenced rows and then passing once they were filled in.
+
 ## Composes with
 
 ### caveman
@@ -61,7 +63,7 @@ Just this plugin:
 /plugin install token-economy
 ```
 
-Or the whole suite (this + design-review, forge-methodology, working-methods, automations) from [one catalog](https://github.com/davidgarciagordo/claude-plugins):
+Or the whole suite (this + design-review, forge-methodology, working-methods, automations, swarm) from [one catalog](https://github.com/davidgarciagordo/claude-plugins):
 
 ```bash
 /plugin marketplace add davidgarciagordo/claude-plugins
