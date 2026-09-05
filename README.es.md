@@ -1,12 +1,12 @@
-# token-economy
+# 💸 token-economy
 
 Plugin de Claude Code. Recorta tokens de entrada/orquestación en trabajo multiagente — sin recortar cobertura.
 
-## El problema
+## ❓ El problema
 
 Cuando una tarea abre varios sub-agentes (una revisión de código, una auditoría, una migración), cada agente re-escanea el mismo repo y re-descubre los mismos hechos — y esa re-lectura repetida, no las respuestas, es el coste dominante en tokens del trabajo multiagente. token-economy hace que el descubrimiento ocurra **una vez**, que el informe de cada agente sea terse, y que el hilo principal deje de narrar.
 
-## Qué contiene
+## 🧩 Qué contiene
 
 | Componente | Qué hace | Cómo se invoca |
 |---|---|---|
@@ -19,7 +19,7 @@ Cuando una tarea abre varios sub-agentes (una revisión de código, una auditor�
 
 Una palanca más sin fichero propio: **prompt-cache**. Cada lente paralela se invoca con un prefijo de prompt idéntico (`Lens: <nombre>. Checks: <una línea>. Pack: <ruta>`) apuntando al mismo fichero de pack — el prefijo estable compartido es lo que hace baratas N lecturas paralelas; el delta por lente va al FINAL del prompt.
 
-## El gate (binario, por fan-out)
+## 🚦 El gate (binario, por fan-out)
 
 `frugal` + salida terse aplican a todo trabajo multiagente — siempre activos. El **context-pack** es la única palanca con decisión, y es binaria, no una intuición. Antes del 2º agente de cualquier fan-out:
 
@@ -32,7 +32,7 @@ Re-evalúa **por fan-out, no por tarea** — a una fase de research disjunta (si
 
 **Verlo aplicado → [examples/](examples/README.es.md)**: 5 prompts copy-paste que muestran exactamente cuándo salta el gate (una revisión con 4 lentes, un barrido de migración, fan-outs disjunto-luego-compartido, una sesión de un solo agente, una segunda pasada entre runs) y qué cambia en el coste cada vez.
 
-## Benchmark
+## 📊 Benchmark
 
 Medido en una pasada real de design-review (Clock Admin, diagnóstico de 4 lentes). Los tokens son aproximados, comparando un baseline (cada lente re-lee el repo + salida verbosa) contra token-economy (un context-pack + terse + read-only):
 
@@ -44,7 +44,7 @@ Medido en una pasada real de design-review (Clock Admin, diagnóstico de 4 lente
 
 **Caveats honestos:** un solo componente; construir el pack cuesta ~74k una vez (se amortiza entre lentes y entre ejecuciones); medido específicamente en el pipeline de design-review. El mayor ahorro es el reúso **cross-run** — el pack determinista + la memoria persistida hacen casi gratis una segunda pasada sobre el mismo target.
 
-## Se compone con
+## 🔗 Se compone con
 
 ### caveman
 
@@ -54,7 +54,7 @@ caveman es un **skill** de compresión de comunicación, no un output-style regi
 
 claude-mem es el **backend de memoria preferido** (ver `references/memory-adapter.md`): el search-before sale gratis vía su tool MCP `search`, y registra observaciones automáticamente a través de sus hooks de sesión — no expone tool de escritura explícito, así que el write-after determinista usa el backend fichero (`.token-economy/memory.md`) en paralelo. Ese híbrido es el diseño documentado, no un apaño: claude-mem + token-economy es el emparejamiento recomendado.
 
-## Instalar
+## 📦 Instalar
 
 Solo este plugin:
 
@@ -63,7 +63,7 @@ Solo este plugin:
 /plugin install token-economy
 ```
 
-O la suite completa (esto + design-review, forge-methodology, working-methods, automations) desde [un solo catálogo](https://github.com/davidgarciagordo/claude-plugins):
+O la suite completa (esto + design-review, forge-methodology, working-methods, automations, swarm) desde [un solo catálogo](https://github.com/davidgarciagordo/claude-plugins):
 
 ```bash
 /plugin marketplace add davidgarciagordo/claude-plugins
@@ -72,10 +72,10 @@ O la suite completa (esto + design-review, forge-methodology, working-methods, a
 
 Nada más que hacer — el output-style `frugal` se aplica solo (`force-for-plugin: true`). Como se fuerza mientras el plugin está activo, el apagado real es **deshabilitar el plugin** (`/plugin` → token-economy → disable), no `/config` — `force-for-plugin` pisa el ajuste outputStyle del usuario por diseño.
 
-## Relación con forge-methodology / design-review
+## 🔗 Relación con forge-methodology / design-review
 
 token-economy es el **hogar standalone de los mecanismos** que esos plugins ya embeben — sus agentes de grill / lente ya corren read-only + terse sobre un context-pack compartido. Si los usas, ya te beneficias de los mecanismos dentro de esos pipelines; token-economy es donde los mecanismos viven canónicamente (script, agente, tests, benchmark), y los aplica a **cualquier otro** trabajo multiagente — además del output-style `frugal` y el adaptador de memoria, que esos plugins no traen.
 
-## Licencia
+## ⚖️ Licencia
 
 MIT © David García Gordo

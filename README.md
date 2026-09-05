@@ -1,12 +1,12 @@
-# token-economy
+# 💸 token-economy
 
 Claude Code plugin. Cuts input/orchestration tokens in multi-agent work — without cutting coverage.
 
-## The problem
+## ❓ The problem
 
 When a task fans out several sub-agents (a code review, an audit, a migration), each agent re-scans the same repo and re-discovers the same facts — and that repeated re-reading, not the answers, is the dominant token cost of multi-agent work. token-economy makes discovery happen **once**, makes every agent's report terse, and stops the main thread from narrating.
 
-## What's inside
+## 🧩 What's inside
 
 | Component | What it does | How it's invoked |
 |---|---|---|
@@ -19,7 +19,7 @@ When a task fans out several sub-agents (a code review, an audit, a migration), 
 
 One more lever with no file of its own: **prompt-cache**. Every parallel lens is invoked with an identical prompt prefix (`Lens: <name>. Checks: <one line>. Pack: <path>`) pointing at the same pack file — the stable shared prefix is what makes N parallel reads cheap; the per-lens delta goes at the END of the prompt.
 
-## The gate (binary, per fan-out)
+## 🚦 The gate (binary, per fan-out)
 
 `frugal` + terse output apply to all multi-agent work — always on. The **context-pack** is the one lever with a decision, and it's binary, not a vibe. Before the 2nd agent of any fan-out:
 
@@ -32,7 +32,7 @@ Re-check **per fan-out, not per task** — a disjoint research phase (no pack) c
 
 **See it applied → [examples/](examples/README.md)**: 5 copy-paste prompts showing exactly when the gate fires (a 4-lens review, a migration sweep, disjoint-then-shared fan-outs, a single-agent session, a cross-run second pass) and what changes in the cost each time.
 
-## Benchmark
+## 📊 Benchmark
 
 Measured on a real design-review pass (Clock Admin, 4-lens diagnosis). Tokens are approximate, comparing a baseline (each lens re-reads the repo + verbose output) against token-economy (one context-pack + terse + read-only):
 
@@ -46,7 +46,7 @@ Measured on a real design-review pass (Clock Admin, 4-lens diagnosis). Tokens ar
 
 **Proof, not just a claim:** [`docs/forge/add-json-output-flag-to-context-pack-mjs/`](docs/forge/add-json-output-flag-to-context-pack-mjs/) is a complete Forge run built *on this repo, using its own `--json` feature* — spec, plan, grill verdicts, and [`verify.md`](docs/forge/add-json-output-flag-to-context-pack-mjs/verify.md): 12/12 tests passing, confirmed by an independent verifier (someone other than the executor), with the real PreToolUse hook observed blocking a `gh pr create` that had unevidenced rows and then passing once they were filled in.
 
-## Composes with
+## 🔗 Composes with
 
 ### caveman
 
@@ -56,7 +56,7 @@ caveman is a communication-compression **skill**, not a registered output-style 
 
 claude-mem is the **preferred memory backend** (see `references/memory-adapter.md`): search-before comes free via its MCP `search` tool, and it records observations automatically through its session hooks — it exposes no explicit write tool, so deterministic write-after uses the file backend (`.token-economy/memory.md`) alongside it. That hybrid is the documented design, not a workaround: claude-mem + token-economy is the recommended pairing.
 
-## Install
+## 📦 Install
 
 Just this plugin:
 
@@ -74,10 +74,10 @@ Or the whole suite (this + design-review, forge-methodology, working-methods, au
 
 Nothing else to do — the `frugal` output-style applies automatically (`force-for-plugin: true`). Because it forces itself while the plugin is enabled, the off-switch is **disabling the plugin** (`/plugin` → token-economy → disable), not `/config` — `force-for-plugin` overrides the user's outputStyle setting by design.
 
-## Relation to forge-methodology / design-review
+## 🔗 Relation to forge-methodology / design-review
 
 token-economy is the **standalone home of the mechanisms** those plugins already embed — their grill / lens agents run read-only + terse over a shared context-pack. If you use them, you already benefit from the mechanisms inside those pipelines; token-economy is where the mechanisms live canonically (script, agent, tests, benchmark), and it applies them to **any other** multi-agent work — plus the `frugal` output-style and the memory adapter, which those plugins don't ship.
 
-## License
+## ⚖️ License
 
 MIT © David García Gordo
