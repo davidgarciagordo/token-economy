@@ -30,6 +30,8 @@ SÍ: revisión de código de un PR/diff, build multi-fase sobre un área, migrac
 
 Re-evalúa **por fan-out, no por tarea** — a una fase de research disjunta (sin pack) puede seguirle una fase de build sobre el mismo dominio (pack obligatorio); la fase 1 no exime a la fase 2.
 
+**Verlo aplicado → [examples/](examples/README.es.md)**: 5 prompts copy-paste que muestran exactamente cuándo salta el gate (una revisión con 4 lentes, un barrido de migración, fan-outs disjunto-luego-compartido, una sesión de un solo agente, una segunda pasada entre runs) y qué cambia en el coste cada vez.
+
 ## Benchmark
 
 Medido en una pasada real de design-review (Clock Admin, diagnóstico de 4 lentes). Los tokens son aproximados, comparando un baseline (cada lente re-lee el repo + salida verbosa) contra token-economy (un context-pack + terse + read-only):

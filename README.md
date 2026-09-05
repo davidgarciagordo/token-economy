@@ -30,6 +30,8 @@ YES: code review of one PR/diff, multi-phase build over one area, migration/swee
 
 Re-check **per fan-out, not per task** — a disjoint research phase (no pack) can be followed by a same-domain build phase (pack mandatory); phase 1 doesn't exempt phase 2.
 
+**See it applied → [examples/](examples/README.md)**: 5 copy-paste prompts showing exactly when the gate fires (a 4-lens review, a migration sweep, disjoint-then-shared fan-outs, a single-agent session, a cross-run second pass) and what changes in the cost each time.
+
 ## Benchmark
 
 Measured on a real design-review pass (Clock Admin, 4-lens diagnosis). Tokens are approximate, comparing a baseline (each lens re-reads the repo + verbose output) against token-economy (one context-pack + terse + read-only):
