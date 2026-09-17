@@ -23,6 +23,19 @@ Una palanca más sin fichero propio: **prompt-cache**. Cada lente paralela se in
 
 ## 🚦 El gate (binario, por fan-out)
 
+```mermaid
+flowchart TD
+    A["Tarea abre N sub-agentes"] --> B{"¿Abrirán los mismos<br/>ficheros?"}
+    B -- "No (módulos disjuntos)" --> C["Cada agente escanea<br/>su propio módulo"]
+    B -- "Sí (≥1 fichero compartido)" --> D["context-pack.mjs corre UNA vez"]
+    D --> E["context-pack.md<br/>(target + mapa del repo + SHARED-FOUND vacío)"]
+    E --> F["N lentes paralelas,<br/>mismo prefijo de prompt (cacheado)"]
+    C --> F
+    F --> G["OK/KO + hallazgos de 1 línea<br/>(sin narración)"]
+    G --> H["output-style frugal:<br/>resultado primero, sin cháchara paso a paso"]
+    G --> I["adaptador de memoria:<br/>claude-mem → otro MCP → fichero"]
+```
+
 `frugal` + salida terse aplican a todo trabajo multiagente — siempre activos. El **context-pack** es la única palanca con decisión, y es binaria, no una intuición. Antes del 2º agente de cualquier fan-out:
 
 > **¿Estos agentes abrirán alguno de los mismos ficheros?**

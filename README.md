@@ -23,6 +23,19 @@ One more lever with no file of its own: **prompt-cache**. Every parallel lens is
 
 ## 🚦 The gate (binary, per fan-out)
 
+```mermaid
+flowchart TD
+    A["Task fans out to N sub-agents"] --> B{"Will they open<br/>the same files?"}
+    B -- "No (disjoint modules)" --> C["Each agent scans<br/>its own module"]
+    B -- "Yes (≥1 shared file)" --> D["context-pack.mjs runs ONCE"]
+    D --> E["context-pack.md<br/>(target + repo map + empty SHARED-FOUND)"]
+    E --> F["N parallel lenses,<br/>same prompt prefix (cached)"]
+    C --> F
+    F --> G["OK/KO + 1-line findings<br/>(no narration)"]
+    G --> H["frugal output-style:<br/>result-first, no per-step chatter"]
+    G --> I["memory adapter:<br/>claude-mem → other MCP → file"]
+```
+
 `frugal` + terse output apply to all multi-agent work — always on. The **context-pack** is the one lever with a decision, and it's binary, not a vibe. Before the 2nd agent of any fan-out:
 
 > **Will these agents open any of the same files?**
