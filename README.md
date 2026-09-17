@@ -1,3 +1,5 @@
+**English** | [Español](README.es.md)
+
 # 💸 token-economy
 
 Claude Code plugin. Cuts input/orchestration tokens in multi-agent work — without cutting coverage.

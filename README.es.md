@@ -1,3 +1,5 @@
+[English](README.md) | **Español**
+
 # 💸 token-economy
 
 Plugin de Claude Code. Recorta tokens de entrada/orquestación en trabajo multiagente — sin recortar cobertura.
