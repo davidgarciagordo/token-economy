@@ -1,0 +1,157 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "El gate (binario, por fan-out)",
+    "output": "gate-es.html",
+    "animation": "none",
+    "visual_preset": "classic",
+    "quality_profile": "standard"
+  },
+  "lanes": [
+    {
+      "id": "top",
+      "label": "Gate y pipeline pack"
+    },
+    {
+      "id": "shortcut",
+      "label": "Vía módulos disjuntos"
+    },
+    {
+      "id": "bottom",
+      "label": "Efectos aguas abajo"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "A",
+      "lane": "top",
+      "col": 0,
+      "type": "backend",
+      "label": "Tarea abre N sub-agentes",
+      "width": 190
+    },
+    {
+      "id": "B",
+      "lane": "top",
+      "col": 1,
+      "type": "security",
+      "label": "¿Abrirán los mismos",
+      "sublabel": "ficheros?",
+      "width": 170
+    },
+    {
+      "id": "D",
+      "lane": "top",
+      "col": 2,
+      "type": "backend",
+      "label": "context-pack.mjs corre UNA vez",
+      "width": 240
+    },
+    {
+      "id": "E",
+      "lane": "top",
+      "col": 3,
+      "type": "backend",
+      "label": "context-pack.md",
+      "sublabel": "(target + mapa del repo + SHARED-FOUND vacío)",
+      "width": 360
+    },
+    {
+      "id": "F",
+      "lane": "top",
+      "col": 4,
+      "type": "backend",
+      "label": "N lentes paralelas,",
+      "sublabel": "mismo prefijo de prompt (cacheado)",
+      "width": 270
+    },
+    {
+      "id": "G",
+      "lane": "top",
+      "col": 5,
+      "type": "backend",
+      "label": "OK/KO + hallazgos de 1 línea",
+      "sublabel": "(sin narración)",
+      "width": 230
+    },
+    {
+      "id": "C",
+      "lane": "shortcut",
+      "col": 2,
+      "type": "backend",
+      "label": "Cada agente escanea",
+      "sublabel": "su propio módulo",
+      "width": 175
+    },
+    {
+      "id": "H",
+      "lane": "bottom",
+      "col": 0,
+      "type": "backend",
+      "label": "output-style frugal:",
+      "sublabel": "resultado primero, sin cháchara paso a paso",
+      "width": 330
+    },
+    {
+      "id": "I",
+      "lane": "bottom",
+      "col": 1,
+      "type": "backend",
+      "label": "adaptador de memoria:",
+      "sublabel": "claude-mem → otro MCP → fichero",
+      "width": 280
+    }
+  ],
+  "edges": [
+    {
+      "from": "A",
+      "to": "B",
+      "role": "main"
+    },
+    {
+      "from": "B",
+      "to": "D",
+      "label": "Sí (≥1 fichero compartido)",
+      "role": "main"
+    },
+    {
+      "from": "B",
+      "to": "C",
+      "label": "No (módulos disjuntos)",
+      "role": "branch",
+      "variant": "dashed"
+    },
+    {
+      "from": "C",
+      "to": "F",
+      "role": "branch",
+      "variant": "dashed"
+    },
+    {
+      "from": "D",
+      "to": "E",
+      "role": "main"
+    },
+    {
+      "from": "E",
+      "to": "F",
+      "role": "main"
+    },
+    {
+      "from": "F",
+      "to": "G",
+      "role": "main"
+    },
+    {
+      "from": "G",
+      "to": "H",
+      "role": "main"
+    },
+    {
+      "from": "G",
+      "to": "I",
+      "role": "main"
+    }
+  ]
+}

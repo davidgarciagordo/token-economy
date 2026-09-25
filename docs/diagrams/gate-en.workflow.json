@@ -1,0 +1,157 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "The gate (binary, per fan-out)",
+    "output": "gate-en.html",
+    "animation": "none",
+    "visual_preset": "classic",
+    "quality_profile": "standard"
+  },
+  "lanes": [
+    {
+      "id": "top",
+      "label": "Gate & pack pipeline"
+    },
+    {
+      "id": "shortcut",
+      "label": "Disjoint-module path"
+    },
+    {
+      "id": "bottom",
+      "label": "Downstream effects"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "A",
+      "lane": "top",
+      "col": 0,
+      "type": "backend",
+      "label": "Task fans out to N sub-agents",
+      "width": 220
+    },
+    {
+      "id": "B",
+      "lane": "top",
+      "col": 1,
+      "type": "security",
+      "label": "Will they open",
+      "sublabel": "the same files?",
+      "width": 150
+    },
+    {
+      "id": "D",
+      "lane": "top",
+      "col": 2,
+      "type": "backend",
+      "label": "context-pack.mjs runs ONCE",
+      "width": 210
+    },
+    {
+      "id": "E",
+      "lane": "top",
+      "col": 3,
+      "type": "backend",
+      "label": "context-pack.md",
+      "sublabel": "(target + repo map + empty SHARED-FOUND)",
+      "width": 320
+    },
+    {
+      "id": "F",
+      "lane": "top",
+      "col": 4,
+      "type": "backend",
+      "label": "N parallel lenses,",
+      "sublabel": "same prompt prefix (cached)",
+      "width": 230
+    },
+    {
+      "id": "G",
+      "lane": "top",
+      "col": 5,
+      "type": "backend",
+      "label": "OK/KO + 1-line findings",
+      "sublabel": "(no narration)",
+      "width": 200
+    },
+    {
+      "id": "C",
+      "lane": "shortcut",
+      "col": 2,
+      "type": "backend",
+      "label": "Each agent scans",
+      "sublabel": "its own module",
+      "width": 150
+    },
+    {
+      "id": "H",
+      "lane": "bottom",
+      "col": 0,
+      "type": "backend",
+      "label": "frugal output-style:",
+      "sublabel": "result-first, no per-step chatter",
+      "width": 270
+    },
+    {
+      "id": "I",
+      "lane": "bottom",
+      "col": 1,
+      "type": "backend",
+      "label": "memory adapter:",
+      "sublabel": "claude-mem → other MCP → file",
+      "width": 250
+    }
+  ],
+  "edges": [
+    {
+      "from": "A",
+      "to": "B",
+      "role": "main"
+    },
+    {
+      "from": "B",
+      "to": "D",
+      "label": "Yes (≥1 shared file)",
+      "role": "main"
+    },
+    {
+      "from": "B",
+      "to": "C",
+      "label": "No (disjoint modules)",
+      "role": "branch",
+      "variant": "dashed"
+    },
+    {
+      "from": "C",
+      "to": "F",
+      "role": "branch",
+      "variant": "dashed"
+    },
+    {
+      "from": "D",
+      "to": "E",
+      "role": "main"
+    },
+    {
+      "from": "E",
+      "to": "F",
+      "role": "main"
+    },
+    {
+      "from": "F",
+      "to": "G",
+      "role": "main"
+    },
+    {
+      "from": "G",
+      "to": "H",
+      "role": "main"
+    },
+    {
+      "from": "G",
+      "to": "I",
+      "role": "main"
+    }
+  ]
+}
