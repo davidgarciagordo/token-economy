@@ -27,8 +27,8 @@ hallucinate a tool call). For explicit write-after, use the **file backend** alo
 claude-mem gives you search-before for free, the file gives you deterministic write-after.
 (`get_observations` is fetch-by-id, not search — use `search` for querying.)
 
-**Backend detection:** at phase start, check the tool list for `mem-*`/memory MCP tools (via
-ToolSearch if deferred). Found → that backend for search. Not found → file backend for both ops.
+**Backend detection:** at phase start, check the tool list for tools whose name contains `claude-mem` or
+`memory` (e.g. `mcp__plugin_claude-mem_mcp-search__search`; via ToolSearch if deferred). Found → that backend for search. Not found → file backend for both ops.
 
 Degrade gracefully: no MCP → fall back to the file backend. The file backend also doubles
 as the durable form of the **context-pack** (`SHARED-FOUND` persisted across runs).

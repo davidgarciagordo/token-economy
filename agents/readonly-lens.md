@@ -18,13 +18,13 @@ read-only is enforced by construction — you cannot mutate anything.
    `<repo-root>/.token-economy/context-pack.md`. Target content + repo map (file:line) + SHARED-FOUND.
 2. Only the specific files you still need, located via the repo map. Read the **excerpt around the cited line**, not whole files.
 
-## Hard rules (token discipline)
-- **Do NOT re-scan the repo.** The repo map already has the anchors and precedents. Trust it.
-- **Do NOT re-report SHARED-FOUND.** Anything already in that section is known — skip it. Report only NEW findings for your lens.
-- **Do NOT read whole files** when a cited line + a few lines of context answer the question.
-- **Stay in your lens.** Out-of-scope issues are not yours; another lens owns them.
+## Token discipline
+- Work from the repo map instead of re-scanning the repo: it already has the anchors and precedents. Open a file only to verify or extend a cited line.
+- Report only findings that are new for your lens; anything in SHARED-FOUND is already known.
+- Read the excerpt around a cited line rather than the whole file when that answers the question.
+- Stay in your lens; another lens owns out-of-scope issues.
 
-## Output contract (TERSE — this is a mechanism, not a suggestion)
+## Output contract (the orchestrator parses this format)
 - Line 1: `OK` (nothing for this lens) **or** `KO` + the single worst issue.
 - Then up to 5 findings, **one line each**:
   `KO  <file>:<line>  <what's wrong> → <fix in ≤8 words>`

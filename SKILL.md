@@ -50,7 +50,7 @@ one domain" is still same-domain → still pack.
    preamble per lens; put the per-lens delta at the END of the prompt.
 
 4. **Frugal main-thread output-style.** The main thread does the work but leads with the
-   result and gives one tight summary — no per-step status, no filler. → `output-styles/frugal.md`
+   result, speaks between tool calls only when it matters, and gives one tight summary. → `output-styles/frugal.md`
    (the caveman-complement for output; stacks with caveman.)
 
 5. **Read-only analysis + mutate-in-one-pass.** Diagnosis agents get `tools: ["Read","Grep","Glob"]`
