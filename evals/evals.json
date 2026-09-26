@@ -1,0 +1,53 @@
+{
+  "skill_name": "token-economy",
+  "notes": "Run each prompt on Haiku, Sonnet and Opus with the plugin enabled. The gate is binary: shared files => context-pack mandatory; disjoint modules => no pack.",
+  "evals": [
+    {
+      "id": 1,
+      "name": "gate-yes-shared-files",
+      "prompt": "Review the diff of this branch with 4 parallel sub-agents: security, performance, naming and test coverage.",
+      "expected_output": "The orchestrator builds the context-pack once before dispatching the lenses, and every lens reads the pack instead of re-scanning.",
+      "expectations": [
+        "Runs scripts/context-pack.mjs exactly once before the 2nd agent is dispatched",
+        "Dispatches the lenses read-only (readonly-lens agent or Read/Grep/Glob only)",
+        "Every lens prompt starts with the same prefix: 'Lens: <name>. Checks: <one line>. Pack: <path>'",
+        "Lens output is OK/KO plus one line per finding, with no narration",
+        "No edits happen until all findings are collected; fixes are applied in a single pass"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "gate-no-disjoint-modules",
+      "prompt": "In parallel, research how the payments module, the clock module and the crm module each handle retries. Each agent should stay in its own module.",
+      "expected_output": "The orchestrator skips the context-pack because the agents open disjoint files, but still asks for terse read-only output.",
+      "expectations": [
+        "Does NOT run scripts/context-pack.mjs",
+        "States that the modules are disjoint, so the pack is skipped",
+        "Sub-agent output is still terse (OK/KO plus one line per finding)"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "second-pass-reuse",
+      "prompt": "Run the same 4-lens review again on the same target after I fixed the first round of findings.",
+      "files": [".token-economy/context-pack.md", ".token-economy/memory.md"],
+      "expected_output": "The orchestrator searches memory before dispatching and reuses the existing pack if the target is unchanged, or regenerates it deterministically if it changed.",
+      "expectations": [
+        "Searches memory (claude-mem or .token-economy/memory.md) before dispatching lenses",
+        "Checks whether the cached pack still matches the target before reusing it",
+        "Findings already listed in SHARED-FOUND or memory are not re-reported",
+        "Writes new findings to memory once, from the orchestrator, after the run"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "single-agent-no-trigger",
+      "prompt": "Rename the variable tmp to buffer in src/parser.js.",
+      "expected_output": "Single-agent edit: no fan-out, no context-pack, no lens agents.",
+      "expectations": [
+        "Does NOT run scripts/context-pack.mjs",
+        "Does NOT dispatch sub-agents"
+      ]
+    }
+  ]
+}

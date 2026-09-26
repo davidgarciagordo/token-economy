@@ -15,7 +15,7 @@ Cuando una tarea abre varios sub-agentes (una revisión de código, una auditor�
 | **skill** (`SKILL.md`) | La doctrina de orquestación: un gate binario de context-pack + 7 palancas (discover-once, salida terse, prefijo prompt-cache, hilo principal frugal, read-only + mutar-en-una-pasada, memoria enchufable, cap + cache). | Se dispara solo cuando pides a Claude trabajo multiagente (revisión / auditoría / migración / fan-out). Claude aplica las palancas él mismo — tú no ejecutas nada. |
 | **script context-pack** (`scripts/context-pack.mjs`) | Escaneo único determinista (sin `Date.now`/`Math.random` → byte-estable, cacheable) → `<raíz-del-repo>/.token-economy/context-pack.md`: contenido del target + mapa del repo (anclas fichero:línea y precedentes por keyword) + `SHARED-FOUND` vacío. `--json` / `--json-out` emiten los mismos datos en JSON para tooling. Los targets que superan `--max-target-lines` (400 por defecto) embeben un **outline** con números de línea en vez del contenido completo, para que N agentes no paguen cada uno un target enorme. | Claude lo ejecuta con su tool Bash: `node "${CLAUDE_PLUGIN_ROOT}/scripts/context-pack.mjs" <target>` |
 | **agente lente read-only** (`agents/readonly-lens.md`) | Lente de análisis con `tools: ["Read","Grep","Glob"]` — sin Edit/Write/Bash, así que el read-only está garantizado por construcción. Contrato de salida: `OK`/`KO` + una línea por hallazgo (`KO <fichero>:<línea> <problema> → <fix>`), sin narración, sin re-reportar `SHARED-FOUND`. | Tool Agent como `token-economy:readonly-lens` (el prompt de invocación nombra la lente y sus checks). |
-| **output-style frugal** (`output-styles/frugal.md`) | Disciplina de salida del hilo principal: resultado primero, un resumen apretado, sin narración paso a paso ni relleno. `keep-coding-instructions: true` — solo tono, nunca la capacidad de programar. | Se aplica solo (`force-for-plugin: true`). Apagado: deshabilitar el plugin (ver Instalar). |
+| **output-style frugal** (`output-styles/frugal.md`) | Disciplina de salida del hilo principal: resultado primero, un resumen apretado, sin narración paso a paso ni relleno. `keep-coding-instructions: true` — solo tono, nunca la capacidad de programar. | Opt-in: `/output-style` (o `/config` → Output style) y elige `frugal`. Apagado: vuelve a tu estilo anterior — el skill y el agente siguen activos. |
 | **adaptador de memoria** (`references/memory-adapter.md`) | Memoria enchufable search-before / write-after, propiedad del orquestador (un solo escritor, sin carreras). Backends en orden de preferencia: **claude-mem** → otro MCP → fichero (`.token-economy/memory.md`). | Claude lo consulta al persistir hallazgos entre ejecuciones. |
 | **tests** (`tests/context-pack.test.sh`) | Harness de 12 casos para el script: forma/determinismo del JSON, flags en cualquier posición, cap de outline, reglas de limpieza de json obsoleto, composición con `--root`. T1 (byte-identidad contra un baseline) requiere `BASELINE=`. | `bash tests/context-pack.test.sh` |
 
@@ -27,7 +27,7 @@ Una palanca más sin fichero propio: **prompt-cache**. Cada lente paralela se in
 
 *Versión interactiva: docs/diagrams/gate-es.html (abrir en local)*
 
-`frugal` + salida terse aplican a todo trabajo multiagente — siempre activos. El **context-pack** es la única palanca con decisión, y es binaria, no una intuición. Antes del 2º agente de cualquier fan-out:
+La salida terse aplica a todo trabajo multiagente (y `frugal`, una vez lo seleccionas). El **context-pack** es la única palanca con decisión, y es binaria, no una intuición. Antes del 2º agente de cualquier fan-out:
 
 > **¿Estos agentes abrirán alguno de los mismos ficheros?**
 > **SÍ → context-pack OBLIGATORIO. NO (módulos disjuntos) → sáltalo.**
@@ -54,7 +54,7 @@ Medido en una pasada real de design-review (Clock Admin, diagnóstico de 4 lente
 
 ### caveman
 
-caveman es un **skill** de compresión de comunicación, no un output-style registrado — comprime cómo se *dice* cada palabra; token-economy recorta cuántos tokens *entran* y mata la narración. El `force-for-plugin` de `frugal` pisa el **ajuste** `outputStyle`, que caveman no ocupa, así que **no hay colisión**: se apilan (caveman-frugal = pidgin terse + resultado primero + sin cháchara paso a paso). Solo si alguien re-empaquetara caveman como output-style real, frugal pisaría ese empaquetado — la forma skill apila sin problema.
+caveman es un **skill** de compresión de comunicación, no un output-style registrado — comprime cómo se *dice* cada palabra; token-economy recorta cuántos tokens *entran* y mata la narración. `frugal` ocupa el **ajuste** `outputStyle`, que caveman no ocupa, así que **no hay colisión**: se apilan (caveman-frugal = pidgin terse + resultado primero + sin cháchara paso a paso). Solo si alguien re-empaquetara caveman como output-style real competirían por ese ajuste — la forma skill apila sin problema.
 
 ### claude-mem
 
@@ -66,7 +66,7 @@ Solo este plugin:
 
 ```bash
 /plugin marketplace add davidgarciagordo/token-economy
-/plugin install token-economy
+/plugin install token-economy@token-economy
 ```
 
 O la suite completa (esto + design-review, forge-methodology, working-methods, automations, swarm) desde [un solo catálogo](https://github.com/davidgarciagordo/claude-plugins):
@@ -76,7 +76,7 @@ O la suite completa (esto + design-review, forge-methodology, working-methods, a
 /plugin install token-economy@davidgarciagordo-plugins
 ```
 
-Nada más que hacer — el output-style `frugal` se aplica solo (`force-for-plugin: true`). Como se fuerza mientras el plugin está activo, el apagado real es **deshabilitar el plugin** (`/plugin` → token-economy → disable), no `/config` — `force-for-plugin` pisa el ajuste outputStyle del usuario por diseño.
+El skill y el agente funcionan desde ya. El output-style `frugal` es **opt-in** para que nunca pise tu `outputStyle` ni se cargue en sesiones que no lo quieren: ejecuta `/output-style` (o `/config` → Output style) y elige `frugal`; se vuelve atrás igual.
 
 ## 🔗 Relación con forge-methodology / design-review
 

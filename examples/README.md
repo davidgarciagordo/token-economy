@@ -56,7 +56,7 @@ each other. Then, once we've picked an approach, implement it across all three.
 Add a `--dry-run` flag to scripts/deploy.sh.
 ```
 
-**What fires:** one agent, one target — the context-pack gate is about *multiple* agents opening the *same* files, so it never applies here. The only thing that fires is `frugal`, active on every response regardless of fan-out: the reply leads with the diff, no per-step "now I'll edit the file" narration, one line at the end if anything is worth flagging.
+**What fires:** one agent, one target — the context-pack gate is about *multiple* agents opening the *same* files, so it never applies here. The only thing that fires is `frugal` (if you selected it), active on every response regardless of fan-out: the reply leads with the diff, no per-step "now I'll edit the file" narration, one line at the end if anything is worth flagging.
 
 ## 5. A second pass on the same target (the biggest win)
 

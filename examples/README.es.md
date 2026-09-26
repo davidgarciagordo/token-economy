@@ -56,7 +56,7 @@ necesitan hablar entre sí. Luego, una vez elegido el enfoque, impleméntalo en 
 Añade un flag `--dry-run` a scripts/deploy.sh.
 ```
 
-**Qué se dispara:** un agente, un objetivo — el gate del context-pack trata de *varios* agentes abriendo los *mismos* ficheros, así que aquí nunca aplica. Lo único que se dispara es `frugal`, activo en cada respuesta sin importar el fan-out: la respuesta empieza por el diff, sin narración paso a paso tipo "ahora edito el fichero", una línea al final solo si hay algo que avisar.
+**Qué se dispara:** un agente, un objetivo — el gate del context-pack trata de *varios* agentes abriendo los *mismos* ficheros, así que aquí nunca aplica. Lo único que se dispara es `frugal` (si lo has seleccionado), activo en cada respuesta sin importar el fan-out: la respuesta empieza por el diff, sin narración paso a paso tipo "ahora edito el fichero", una línea al final solo si hay algo que avisar.
 
 ## 5. Una segunda pasada sobre el mismo objetivo (el mayor ahorro)
 

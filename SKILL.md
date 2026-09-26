@@ -1,6 +1,6 @@
 ---
 name: token-economy
-description: Use when orchestrating MULTI-AGENT work in Claude Code — fanning out sub-agents, a review/audit across many files, a migration/sweep, or any task where several agents would each re-scan the same code. Cuts INPUT/orchestration tokens without losing quality. The orchestrator (you, the model) applies the levers ITSELF — build a discover-once context-pack (run "${CLAUDE_PLUGIN_ROOT}/scripts/context-pack.mjs" via your Bash tool), dispatch sub-agents READ-ONLY + TERSE over that pack, mutate in one pass, use pluggable memory across runs; pair with the `frugal` output-style. The USER never runs the scripts — you do, as part of normal orchestration. Complements caveman (a communication-compression skill); they stack.
+description: Cuts input/orchestration tokens in multi-agent Claude Code work via a discover-once context-pack, read-only terse lenses, one-pass mutation and cross-run memory. Use when fanning out sub-agents, reviewing or auditing many files, or running a migration/sweep where agents would re-scan the same code.
 ---
 
 # token-economy
@@ -11,9 +11,13 @@ discipline for the main thread. Complementary; they stack.
 
 Each lever below is a real mechanism, not advice. Apply the ones the task needs.
 
+The orchestrating model applies the levers itself, as part of normal orchestration: it runs
+`"${CLAUDE_PLUGIN_ROOT}/scripts/context-pack.mjs"` through its Bash tool and dispatches the
+lenses. The user never runs the scripts.
+
 ## The gate: run this at EVERY fan-out (not once per session)
 
-`frugal` + terse output apply to all multi-agent work — always on. The **context-pack** is the
+Terse output applies to all multi-agent work (plus `frugal` when the user selected it). The **context-pack** is the
 one lever with a decision, and it's binary, not a vibe. Before the 2nd agent of any fan-out:
 
 > **Will these agents open any of the same files?**
@@ -64,6 +68,4 @@ one domain" is still same-domain → still pack.
 
 ## Benchmark
 
-Measured on a design-review pass (Clock Admin): ~2.6× per lens, ~1.8× for a full 4-lens diagnosis,
-~7× on a second pass over the same component (artifact reuse). Cross-run reuse is the biggest win.
-Detail: `README.md` → Benchmark.
+Measured savings and caveats: `README.md` → Benchmark.

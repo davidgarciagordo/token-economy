@@ -1,6 +1,6 @@
 ---
 name: readonly-lens
-description: Read-only analysis lens for multi-agent diagnosis. One agent, one angle. Reads the context-pack, does NOT re-scan the repo, does NOT re-report SHARED-FOUND. Terse OK/KO output.
+description: Read-only analysis lens for multi-agent diagnosis. One agent, one angle. Reads the context-pack, does NOT re-scan the repo, does NOT re-report SHARED-FOUND. Terse OK/KO output. Use when fanning out read-only analysis lenses over a context-pack.
 tools: ["Read", "Grep", "Glob"]
 model: sonnet
 ---

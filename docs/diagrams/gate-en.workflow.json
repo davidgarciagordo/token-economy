@@ -89,9 +89,9 @@
       "lane": "bottom",
       "col": 0,
       "type": "backend",
-      "label": "frugal output-style:",
+      "label": "frugal output-style (opt-in):",
       "sublabel": "result-first, no per-step chatter",
-      "width": 270
+      "width": 290
     },
     {
       "id": "I",

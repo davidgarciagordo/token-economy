@@ -89,7 +89,7 @@
       "lane": "bottom",
       "col": 0,
       "type": "backend",
-      "label": "output-style frugal:",
+      "label": "output-style frugal (opt-in):",
       "sublabel": "resultado primero, sin cháchara paso a paso",
       "width": 330
     },

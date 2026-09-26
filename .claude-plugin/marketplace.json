@@ -1,6 +1,5 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
-  "version": "1.0.0",
   "name": "token-economy",
   "description": "Token-economy levers for multi-agent Claude Code work: discover-once context-pack, terse read-only analysis lenses, a frugal main-thread output-style, a pluggable memory adapter, and cap+cache. Cuts INPUT/orchestration tokens; complements caveman (output compression). Independently installable.",
   "owner": {

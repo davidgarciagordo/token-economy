@@ -15,7 +15,7 @@ When a task fans out several sub-agents (a code review, an audit, a migration), 
 | **skill** (`SKILL.md`) | The orchestration doctrine: a binary context-pack gate + 7 levers (discover-once, terse output, prompt-cache prefix, frugal main thread, read-only + mutate-in-one-pass, pluggable memory, cap + cache). | Auto-triggers when you ask Claude for multi-agent work (review / audit / migrate / fan-out). Claude applies the levers itself — you never run anything. |
 | **context-pack script** (`scripts/context-pack.mjs`) | Deterministic single scan (no `Date.now`/`Math.random` → byte-stable, cacheable) → `<repo-root>/.token-economy/context-pack.md`: target content + repo map (file:line anchors and keyword precedents) + empty `SHARED-FOUND`. `--json` / `--json-out` emit the same data as JSON for tooling. Targets longer than `--max-target-lines` (default 400) embed a line-numbered **outline** instead of full content, so N agents don't each pay for a huge target. | Claude runs it via its Bash tool: `node "${CLAUDE_PLUGIN_ROOT}/scripts/context-pack.mjs" <target>` |
 | **read-only lens agent** (`agents/readonly-lens.md`) | Analysis lens with `tools: ["Read","Grep","Glob"]` — no Edit/Write/Bash, so read-only is enforced by construction. Output contract: `OK`/`KO` + one line per finding (`KO <file>:<line> <problem> → <fix>`), no narration, no re-reporting `SHARED-FOUND`. | Agent tool as `token-economy:readonly-lens` (the invocation prompt names the lens and its checks). |
-| **frugal output-style** (`output-styles/frugal.md`) | Main-thread output discipline: lead with the result, one tight summary, no per-step narration or filler. `keep-coding-instructions: true` — tone only, never coding ability. | Applies automatically (`force-for-plugin: true`). Off-switch: disable the plugin (see Install). |
+| **frugal output-style** (`output-styles/frugal.md`) | Main-thread output discipline: lead with the result, one tight summary, no per-step narration or filler. `keep-coding-instructions: true` — tone only, never coding ability. | Opt-in: `/output-style` (or `/config` → Output style) and pick `frugal`. Off: switch back to your previous style — the skill and agent stay enabled. |
 | **memory adapter** (`references/memory-adapter.md`) | Pluggable search-before / write-after memory, orchestrator-owned (one writer, no races). Backends in preference order: **claude-mem** → other MCP → file (`.token-economy/memory.md`). | Claude consults it when persisting findings across runs. |
 | **tests** (`tests/context-pack.test.sh`) | 12-case harness for the script: JSON shape/determinism, flags-anywhere, outline cap, stale-json cleanup rules, `--root` composition. T1 (byte-identity vs a baseline) needs `BASELINE=` set. | `bash tests/context-pack.test.sh` |
 
@@ -27,7 +27,7 @@ One more lever with no file of its own: **prompt-cache**. Every parallel lens is
 
 *Interactive version: docs/diagrams/gate-en.html (open locally)*
 
-`frugal` + terse output apply to all multi-agent work — always on. The **context-pack** is the one lever with a decision, and it's binary, not a vibe. Before the 2nd agent of any fan-out:
+Terse output applies to all multi-agent work (and `frugal`, once you select it). The **context-pack** is the one lever with a decision, and it's binary, not a vibe. Before the 2nd agent of any fan-out:
 
 > **Will these agents open any of the same files?**
 > **YES → context-pack MANDATORY. NO (disjoint modules) → skip it.**
@@ -50,13 +50,13 @@ Measured on a real design-review pass (Clock Admin, 4-lens diagnosis). Tokens ar
 
 **Honest caveats:** single component; the pack build is ~74k one-time (it amortizes across lenses and across runs); measured on the design-review pipeline specifically. The biggest win is **cross-run** reuse — the deterministic pack + persisted memory make a second pass on the same target nearly free.
 
-**Proof, not just a claim:** [`docs/forge/add-json-output-flag-to-context-pack-mjs/`](docs/forge/add-json-output-flag-to-context-pack-mjs/) is a complete Forge run built *on this repo, using its own `--json` feature* — spec, plan, grill verdicts, and [`verify.md`](docs/forge/add-json-output-flag-to-context-pack-mjs/verify.md): 12/12 tests passing, confirmed by an independent verifier (someone other than the executor), with the real PreToolUse hook observed blocking a `gh pr create` that had unevidenced rows and then passing once they were filled in.
+**Proof, not just a claim:** [`docs/forge/add-json-output-flag-to-context-pack-mjs/`](docs/forge/add-json-output-flag-to-context-pack-mjs/) is a complete Forge run built *on this repo, using its own `--json` feature* — spec, plan, grill verdicts, and [`verify.md`](docs/forge/add-json-output-flag-to-context-pack-mjs/verify.md): 12/12 tests passing (with `BASELINE` set; without it T1 is skipped and the run reports 11/11), confirmed by an independent verifier (someone other than the executor), with forge-methodology's PreToolUse hook (not part of this plugin) observed blocking a `gh pr create` that had unevidenced rows and then passing once they were filled in.
 
 ## 🔗 Composes with
 
 ### caveman
 
-caveman is a communication-compression **skill**, not a registered output-style — it compresses how each word is *said*; token-economy cuts how many tokens go *in* and kills narration. `frugal`'s `force-for-plugin` overrides the `outputStyle` **setting**, which caveman does not occupy, so there is **no collision**: they stack (caveman-frugal = terse pidgin + result-first + no per-step chatter). Only if someone repackaged caveman as an actual output-style would frugal override that packaging — the skill form stacks fine.
+caveman is a communication-compression **skill**, not a registered output-style — it compresses how each word is *said*; token-economy cuts how many tokens go *in* and kills narration. `frugal` occupies the `outputStyle` **setting**, which caveman does not, so there is **no collision**: they stack (caveman-frugal = terse pidgin + result-first + no per-step chatter). Only if someone repackaged caveman as an actual output-style would the two compete for that setting — the skill form stacks fine.
 
 ### claude-mem
 
@@ -68,7 +68,7 @@ Just this plugin:
 
 ```bash
 /plugin marketplace add davidgarciagordo/token-economy
-/plugin install token-economy
+/plugin install token-economy@token-economy
 ```
 
 Or the whole suite (this + design-review, forge-methodology, working-methods, automations, swarm) from [one catalog](https://github.com/davidgarciagordo/claude-plugins):
@@ -78,7 +78,7 @@ Or the whole suite (this + design-review, forge-methodology, working-methods, au
 /plugin install token-economy@davidgarciagordo-plugins
 ```
 
-Nothing else to do — the `frugal` output-style applies automatically (`force-for-plugin: true`). Because it forces itself while the plugin is enabled, the off-switch is **disabling the plugin** (`/plugin` → token-economy → disable), not `/config` — `force-for-plugin` overrides the user's outputStyle setting by design.
+The skill and the agent work right away. The `frugal` output-style is **opt-in** so it never overrides your own `outputStyle` or loads into sessions that don't want it: run `/output-style` (or `/config` → Output style) and pick `frugal`; switch back the same way.
 
 ## 🔗 Relation to forge-methodology / design-review
 
